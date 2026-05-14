@@ -1,28 +1,27 @@
 import '../../domain/entities/customer_entity.dart';
 import 'model_service.dart';
 import 'python_model_service.dart';
-import 'rest_model_service.dart';
+import 'supabase_edge_service.dart';
 
 class ChurnRemoteDataSourceImpl implements IChurnRemoteDataSource {
   final PythonModelDeploymentService localModel;
-  final RestModelService? apiModel;
-  bool _useApi = false;
+  final SupabaseEdgeModelService edgeModel;
+  bool _useCloud = true;
 
   ChurnRemoteDataSourceImpl({
     required this.localModel,
-    this.apiModel,
+    required this.edgeModel,
   });
 
-  void setUseApi(bool value) => _useApi = value;
-  void setApiModel(String modelType) => apiModel?.setModel(modelType);
+  void setUseCloud(bool value) => _useCloud = value;
 
   @override
   Future<double> predict(CustomerEntity customer) async {
-    if (_useApi && apiModel != null) {
+    if (_useCloud) {
       try {
-        return await apiModel!.predict(customer);
+        return await edgeModel.predict(customer);
       } catch (e) {
-        print('API failed, using local model: $e');
+        print('Cloud prediction failed, using local fallback: $e');
         return await localModel.predict(customer);
       }
     }

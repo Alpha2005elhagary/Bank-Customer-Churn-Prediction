@@ -5,7 +5,7 @@ import 'core/constants.dart';
 import 'core/theme.dart';
 import 'data/datasources/churn_remote_data_source.dart';
 import 'data/datasources/python_model_service.dart';
-import 'data/datasources/rest_model_service.dart';
+import 'data/datasources/supabase_edge_service.dart';
 import 'data/repositories/churn_repository_impl.dart';
 import 'data/repositories/history_repository.dart';
 import 'domain/usecases/predict_churn_usecase.dart';
@@ -27,10 +27,10 @@ void main() async {
   // Initialize Data Sources
   // Initialize Deployed Python Model and Data Sources
   final localModelService = PythonModelDeploymentService();
-  final apiModelService = RestModelService();
+  final edgeModelService = SupabaseEdgeModelService();
   final remoteDataSource = ChurnRemoteDataSourceImpl(
     localModel: localModelService,
-    apiModel: apiModelService,
+    edgeModel: edgeModelService,
   );
 
   // Initialize Repositories
