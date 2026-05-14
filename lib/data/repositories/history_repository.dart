@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/prediction_history_entity.dart';
+import '../../domain/entities/customer_entity.dart';
 
 class PredictionHistoryRepository {
   final _client = Supabase.instance.client;
@@ -30,27 +31,37 @@ class PredictionHistoryRepository {
     final user = _client.auth.currentUser;
     if (user == null) return [];
 
-    final response = await _client
-        .from('predictions')
-        .select()
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false);
+    try {
+      final response = await _client
+          .from('predictions')
+          .select()
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
 
-    return (response as List).map((json) {
-      // Mapping logic would go here, converting JSON back to Entities
-      // For brevity, returning a placeholder or implementing mapping
-      return PredictionHistoryEntity(
-        id: json['id'].toString(),
-        customer: _mapJsonToCustomer(json),
-        probability: json['probability'],
-        timestamp: DateTime.parse(json['created_at']),
-      );
-    }).toList();
-  }
-
-  // Helper to map JSON to Entity
-  dynamic _mapJsonToCustomer(Map<String, dynamic> json) {
-    // This would match the CustomerEntity structure
-    return null; // Implementation detail
+      final List data = response as List;
+      return data.map((json) {
+        return PredictionHistoryEntity(
+          id: json['id'].toString(),
+          customer: CustomerEntity(
+            surname: json['customer_surname'] ?? '',
+            creditScore: json['credit_score'] ?? 0,
+            geography: json['geography'] ?? '',
+            gender: json['gender'] ?? '',
+            age: json['age'] ?? 0,
+            tenure: json['tenure'] ?? 0,
+            balance: (json['balance'] as num).toDouble(),
+            numOfProducts: json['num_products'] ?? 0,
+            hasCrCard: json['has_card'] ?? false,
+            isActiveMember: json['is_active'] ?? false,
+            estimatedSalary: (json['salary'] as num).toDouble(),
+          ),
+          probability: (json['probability'] as num).toDouble(),
+          timestamp: DateTime.parse(json['created_at']),
+        );
+      }).toList();
+    } catch (e) {
+      // If table doesn't exist yet or other error, return empty
+      return [];
+    }
   }
 }

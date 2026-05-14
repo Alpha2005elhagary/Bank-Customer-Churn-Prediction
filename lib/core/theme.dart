@@ -59,11 +59,11 @@ class AppTheme {
         color: AppColors.textSecondary,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: Colors.white.withOpacity(0.05)),
       ),
     ),

@@ -3,6 +3,10 @@ import 'model_service.dart';
 import 'python_model_service.dart';
 import 'supabase_edge_service.dart';
 
+abstract class IChurnRemoteDataSource {
+  Future<double> predict(CustomerEntity customer);
+}
+
 class ChurnRemoteDataSourceImpl implements IChurnRemoteDataSource {
   final PythonModelDeploymentService localModel;
   final SupabaseEdgeModelService edgeModel;

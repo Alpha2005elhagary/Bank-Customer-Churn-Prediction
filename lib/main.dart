@@ -15,6 +15,10 @@ import 'presentation/viewmodels/churn_viewmodel.dart';
 import 'presentation/viewmodels/market_viewmodel.dart';
 import 'presentation/views/splash_view.dart';
 import 'presentation/views/home_view.dart';
+import 'presentation/views/onboarding_view.dart';
+import 'presentation/views/login_view.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +29,6 @@ void main() async {
   );
 
   // Initialize Data Sources
-  // Initialize Deployed Python Model and Data Sources
   final localModelService = PythonModelDeploymentService();
   final edgeModelService = SupabaseEdgeModelService();
   final remoteDataSource = ChurnRemoteDataSourceImpl(
@@ -69,10 +72,27 @@ class ChurnInsightApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Bank Customer Churn Prediction',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const SplashView(),
+      home: Consumer<AuthViewModel>(
+        builder: (context, authVM, _) {
+          if (!authVM.isSplashDone) {
+            return const SplashView();
+          }
+          
+          if (authVM.isFirstTime) {
+            return const OnboardingView();
+          }
+          
+          if (authVM.isLoggedIn) {
+            return const HomeView();
+          }
+          
+          return const LoginView();
+        },
+      ),
     );
   }
 }

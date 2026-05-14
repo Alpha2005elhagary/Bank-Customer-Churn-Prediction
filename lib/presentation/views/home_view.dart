@@ -5,9 +5,9 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../core/theme.dart';
 import '../viewmodels/churn_viewmodel.dart';
 import '../viewmodels/market_viewmodel.dart';
+import '../viewmodels/auth_viewmodel.dart';
 import '../widgets/glass_card.dart';
 import 'prediction_view.dart';
-import '../../domain/entities/market_entity.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -15,6 +15,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           // Background Blobs
@@ -26,7 +27,7 @@ class HomeView extends StatelessWidget {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withOpacity(0.15),
+                color: AppColors.primary.withValues(alpha: 0.15),
               ),
             ),
           ),
@@ -38,7 +39,7 @@ class HomeView extends StatelessWidget {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.secondary.withOpacity(0.1),
+                color: AppColors.secondary.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -49,7 +50,7 @@ class HomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(),
+                  _buildHeader(context),
                   const SizedBox(height: 24),
                   _buildSystemStatus(),
                   const SizedBox(height: 24),
@@ -65,8 +66,6 @@ class HomeView extends StatelessWidget {
                   const SizedBox(height: 32),
                   _buildChartSection(),
                   const SizedBox(height: 32),
-                  _buildChartSection(),
-                  const SizedBox(height: 32),
                   _buildActionCard(context),
                 ],
               ),
@@ -78,68 +77,156 @@ class HomeView extends StatelessWidget {
   }
 
   Widget _buildSystemStatus() {
-    return Consumer<ChurnViewModel>(
-      builder: (context, churnVM, child) {
-        return GlassCard(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          borderRadius: 16,
-          child: Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: AppColors.success,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'AI Model: Ready',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              const Text(
-                'TFLite v2.15',
-                style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
-              ),
-            ],
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: 16,
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: const BoxDecoration(
+              color: AppColors.success,
+              shape: BoxShape.circle,
+            ),
           ),
-        );
-      },
+          const SizedBox(width: 12),
+          const Text(
+            'AI Model: Ready',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          const Text(
+            'TFLite v2.15',
+            style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Financial Intelligence',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary.withValues(alpha: 0.6),
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Welcome Back,',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 16,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                onPressed: () => _showLogoutDialog(context),
+                icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 22),
+                tooltip: 'Logout',
               ),
             ),
-            Text(
-              'Churn Insight AI',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => _showProfileDialog(context),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                ),
+                child: const CircleAvatar(
+                  radius: 22,
+                  backgroundColor: AppColors.surface,
+                  child: Icon(FontAwesomeIcons.user, size: 18, color: AppColors.primary),
+                ),
               ),
             ),
           ],
         ),
-        const CircleAvatar(
-          radius: 24,
-          backgroundColor: AppColors.surface,
-          child: Icon(FontAwesomeIcons.user, size: 20, color: AppColors.primary),
-        ),
       ],
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Logout', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to logout?', style: TextStyle(color: AppColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Close dialog
+              Navigator.pop(context);
+              
+              // Clear data
+              context.read<ChurnViewModel>().clearHistory();
+              
+              // Perform logout
+              await context.read<AuthViewModel>().logout();
+            },
+            child: const Text('Logout', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProfileDialog(BuildContext context) {
+    final user = context.read<AuthViewModel>().currentUser;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('User Profile', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircleAvatar(
+              radius: 40,
+              backgroundColor: AppColors.primary,
+              child: Icon(FontAwesomeIcons.user, size: 30, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            Text(user?.email ?? 'Unknown User', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Financial Intelligence Account', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -150,7 +237,7 @@ class HomeView extends StatelessWidget {
       crossAxisCount: 2,
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.3,
       children: [
         _buildStatCard('Total Customers', '10,245', FontAwesomeIcons.users, AppColors.primary),
         _buildStatCard('Churn Rate', '14.2%', FontAwesomeIcons.arrowTrendUp, AppColors.error),
@@ -194,51 +281,64 @@ class HomeView extends StatelessWidget {
   }
 
   Widget _buildChartSection() {
-    return GlassCard(
-      height: 250,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Churn Risk Overview',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Expanded(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Market Performance Index',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 16),
+        GlassCard(
+          height: 250,
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          child: RepaintBoundary(
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: false),
-                titlesData: FlTitlesData(show: false),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    strokeWidth: 1,
+                  ),
+                ),
+                titlesData: const FlTitlesData(show: false),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
                     spots: const [
                       FlSpot(0, 3),
-                      FlSpot(1, 4),
-                      FlSpot(2, 3.5),
-                      FlSpot(3, 5),
-                      FlSpot(4, 4.5),
-                      FlSpot(5, 6),
+                      FlSpot(2.6, 2),
+                      FlSpot(4.9, 5),
+                      FlSpot(6.8, 3.1),
+                      FlSpot(8, 4),
+                      FlSpot(9.5, 3),
+                      FlSpot(11, 4),
                     ],
                     isCurved: true,
-                    color: AppColors.primary,
+                    gradient: AppColors.primaryGradient,
                     barWidth: 4,
-                    dotData: FlDotData(show: false),
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppColors.primary.withOpacity(0.1),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.2),
+                          AppColors.primary.withValues(alpha: 0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -318,7 +418,7 @@ class HomeView extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: (stock.isUp ? AppColors.success : AppColors.error).withOpacity(0.1),
+                          color: (stock.isUp ? AppColors.success : AppColors.error).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -375,10 +475,13 @@ class HomeView extends StatelessWidget {
           builder: (context, churnVM, child) {
             if (churnVM.history.isEmpty) {
               return GlassCard(
-                child: Center(
-                  child: Text(
-                    'No recent predictions',
-                    style: TextStyle(color: AppColors.textSecondary.withOpacity(0.5)),
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Center(
+                    child: Text(
+                      'No recent predictions',
+                      style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                    ),
                   ),
                 ),
               );
@@ -398,7 +501,7 @@ class HomeView extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: (item.isHighRisk ? AppColors.error : AppColors.success).withOpacity(0.1),
+                          color: (item.isHighRisk ? AppColors.error : AppColors.success).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -471,7 +574,7 @@ class HomeView extends StatelessWidget {
           const SizedBox(height: 12),
           Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 4),
-          Text(status, style: TextStyle(color: color.withOpacity(0.7), fontSize: 10, fontWeight: FontWeight.bold)),
+          Text(status, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -492,7 +595,7 @@ class HomeView extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -527,7 +630,7 @@ class HomeView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(FontAwesomeIcons.chevronRight, color: Colors.white, size: 20),

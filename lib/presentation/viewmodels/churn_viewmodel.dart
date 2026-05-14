@@ -11,16 +11,20 @@ class ChurnViewModel with ChangeNotifier {
   ChurnViewModel({
     required this.predictChurnUseCase,
     required this.historyRepository,
-  });
+  }) {
+    fetchHistory(); // Fetch on initialization
+  }
 
   CustomerEntity _currentCustomer = CustomerEntity.empty();
   bool _isPredicting = false;
+  bool _isLoadingHistory = false;
   double? _lastPrediction;
   String? _errorMessage;
-  final List<PredictionHistoryEntity> _history = [];
+  List<PredictionHistoryEntity> _history = [];
 
   CustomerEntity get currentCustomer => _currentCustomer;
   bool get isPredicting => _isPredicting;
+  bool get isLoadingHistory => _isLoadingHistory;
   double? get lastPrediction => _lastPrediction;
   String? get errorMessage => _errorMessage;
   List<PredictionHistoryEntity> get history => List.unmodifiable(_history);
@@ -28,6 +32,19 @@ class ChurnViewModel with ChangeNotifier {
   void updateCustomer(CustomerEntity customer) {
     _currentCustomer = customer;
     notifyListeners();
+  }
+
+  Future<void> fetchHistory() async {
+    _isLoadingHistory = true;
+    notifyListeners();
+    try {
+      _history = await historyRepository.fetchHistory();
+    } catch (e) {
+      _errorMessage = 'Failed to load history';
+    } finally {
+      _isLoadingHistory = false;
+      notifyListeners();
+    }
   }
 
   Future<void> predictChurn() async {
@@ -64,6 +81,11 @@ class ChurnViewModel with ChangeNotifier {
     _lastPrediction = null;
     _isPredicting = false;
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  void clearHistory() {
+    _history = [];
     notifyListeners();
   }
 }

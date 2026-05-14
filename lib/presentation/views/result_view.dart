@@ -15,6 +15,7 @@ class ResultView extends StatelessWidget {
     final isHighRisk = probability > 0.5;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           // Risk-based background gradient
@@ -26,8 +27,8 @@ class ResultView extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   isHighRisk 
-                      ? AppColors.error.withOpacity(0.2) 
-                      : AppColors.success.withOpacity(0.2),
+                      ? AppColors.error.withValues(alpha: 0.2) 
+                      : AppColors.success.withValues(alpha: 0.2),
                   AppColors.background,
                 ],
               ),
@@ -35,7 +36,7 @@ class ResultView extends StatelessWidget {
           ),
           
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
@@ -45,7 +46,7 @@ class ResultView extends StatelessWidget {
                   _buildGauge(probability, isHighRisk),
                   const SizedBox(height: 60),
                   _buildDetailsCard(provider),
-                  const Spacer(),
+                  const SizedBox(height: 60),
                   _buildActionButtons(context),
                   const SizedBox(height: 20),
                 ],
@@ -77,6 +78,7 @@ class ResultView extends StatelessWidget {
         const SizedBox(height: 8),
         const Text(
           'Based on our AI analysis of customer behavior',
+          textAlign: TextAlign.center,
           style: TextStyle(color: AppColors.textSecondary),
         ),
       ],
@@ -93,7 +95,7 @@ class ResultView extends StatelessWidget {
           child: CircularProgressIndicator(
             value: probability,
             strokeWidth: 12,
-            backgroundColor: Colors.white.withOpacity(0.1),
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
             color: isHighRisk ? AppColors.error : AppColors.success,
           ),
         ),
@@ -121,6 +123,7 @@ class ResultView extends StatelessWidget {
   Widget _buildDetailsCard(ChurnViewModel provider) {
     final customer = provider.currentCustomer;
     return GlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
           _buildDetailRow('Customer', customer.surname),

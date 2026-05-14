@@ -39,29 +39,10 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
   }
 
   void _navigateToNext() async {
-    await Future.delayed(const Duration(milliseconds: 3000));
-    if (!mounted) return;
-
-    final authVM = context.read<AuthViewModel>();
-    
-    Widget nextView;
-    if (authVM.isFirstTime) {
-      nextView = const OnboardingView();
-    } else if (!authVM.isLoggedIn) {
-      nextView = const LoginView();
-    } else {
-      nextView = const HomeView();
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (mounted) {
+      context.read<AuthViewModel>().completeSplash();
     }
-
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => nextView,
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-      ),
-    );
   }
 
   @override

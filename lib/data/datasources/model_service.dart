@@ -14,8 +14,7 @@ class SavedModelService implements IChurnModelService {
   }
 
   Future<void> _loadModel() async {
-    // Simulate loading a TFLite model from assets
-    await Future.delayed(const Duration(seconds: 1));
+    // Artificial delay removed for faster launch
     _isLoaded = true;
   }
 
