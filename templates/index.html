@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Churn Prediction System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="main-card">
+            <div class="header">
+                <h1>🏦 Bank Customer Churn Prediction System</h1>
+                <p>Powered by Ahmed Helal - Predict customer churn with 4 different models</p>
+            </div>
+            
+            <div class="form-section">
+                <form method="POST" action="/predict">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Credit Score (300-850)</label>
+                            <input type="number" class="form-control" name="credit_score" 
+                                   value="{{ form_data.get('credit_score', '650') if form_data else '650' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Geography</label>
+                            <select class="form-control" name="geography" required>
+                                <option value="France" {% if form_data and form_data.get('geography') == 'France' %}selected{% endif %}>France</option>
+                                <option value="Germany" {% if form_data and form_data.get('geography') == 'Germany' %}selected{% endif %}>Germany</option>
+                                <option value="Spain" {% if form_data and form_data.get('geography') == 'Spain' %}selected{% endif %}>Spain</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Gender</label>
+                            <select class="form-control" name="gender" required>
+                                <option value="Male" {% if form_data and form_data.get('gender') == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if form_data and form_data.get('gender') == 'Female' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Age</label>
+                            <input type="number" class="form-control" name="age" 
+                                   value="{{ form_data.get('age', '35') if form_data else '35' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tenure (years with bank)</label>
+                            <input type="number" class="form-control" name="tenure" 
+                                   value="{{ form_data.get('tenure', '5') if form_data else '5' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Balance ($)</label>
+                            <input type="number" class="form-control" name="balance" 
+                                   value="{{ form_data.get('balance', '0') if form_data else '0' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Number of Products</label>
+                            <input type="number" class="form-control" name="num_products" 
+                                   value="{{ form_data.get('num_products', '1') if form_data else '1' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Has Credit Card?</label>
+                            <select class="form-control" name="has_cr_card" required>
+                                <option value="1" {% if form_data and form_data.get('has_cr_card') == '1' %}selected{% endif %}>Yes</option>
+                                <option value="0" {% if form_data and form_data.get('has_cr_card') == '0' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Is Active Member?</label>
+                            <select class="form-control" name="is_active" required>
+                                <option value="1" {% if form_data and form_data.get('is_active') == '1' %}selected{% endif %}>Yes</option>
+                                <option value="0" {% if form_data and form_data.get('is_active') == '0' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Estimated Salary ($)</label>
+                            <input type="number" class="form-control" name="estimated_salary" 
+                                   value="{{ form_data.get('estimated_salary', '50000') if form_data else '50000' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Select Model</label>
+                            <select class="form-control" name="model" required>
+                                <option value="Random Forest" {% if form_data and form_data.get('model') == 'Random Forest' %}selected{% endif %}>Random Forest (Recommended)</option>
+                                <option value="Decision Tree" {% if form_data and form_data.get('model') == 'Decision Tree' %}selected{% endif %}>Decision Tree</option>
+                                <option value="SVM" {% if form_data and form_data.get('model') == 'SVM' %}selected{% endif %}>SVM</option>
+                                <option value="KNN" {% if form_data and form_data.get('model') == 'KNN' %}selected{% endif %}>KNN</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <button type="submit" class="btn-predict">🔮 Predict with Selected Model</button>
+                            <button type="submit" formaction="/predict_all" class="btn-predict">📊 Compare All Models</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            {% if error %}
+            <div class="result-section">
+                <div class="alert alert-danger">
+                    ❌ Error: {{ error }}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if result %}
+            <div class="result-section">
+                <h3>📈 Prediction Result</h3>
+                <div class="result-card">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>🤖 Model Used:</strong> <span class="model-badge">{{ result.model_used }}</span></p>
+                            <p><strong>🎯 Prediction:</strong> <span class="{% if 'WILL CHURN' in result.prediction %}prediction-churn{% else %}prediction-stay{% endif %}">{{ result.prediction }}</span></p>
+                            <p><strong>📊 Churn Probability:</strong> {{ result.churn_probability }}</p>
+                            <p><strong>⚠️ Risk Level:</strong> <span class="{% if 'HIGH' in result.risk_level %}risk-high{% elif 'MEDIUM' in result.risk_level %}risk-medium{% else %}risk-low{% endif %}">{{ result.risk_level }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>💡 Recommendation:</strong></p>
+                            <p>{{ result.recommendation }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if all_results %}
+            <div class="result-section">
+                <h3>📊 All Models Comparison</h3>
+                <div class="table-responsive all-results-table">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Prediction</th>
+                                <th>Churn Probability</th>
+                                <th>Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in all_results %}
+                            <tr>
+                                <td><strong>{{ res.model }}</strong></td>
+                                <td class="{% if 'WILL CHURN' in res.prediction %}text-danger{% else %}text-success{% endif %}">{{ res.prediction }}</td>
+                                <td>{{ res.probability }}</td>
+                                <td>{{ res.risk }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-info mt-3">
+                    💡 <strong>Tip:</strong> Random Forest is the most accurate model for this dataset!
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 Bank Churn Prediction System | Powered by Ahmed Helal</p>
+        </div>
+    </div>
+</body>
+</html>
